@@ -5,7 +5,9 @@ import { TimerView } from './components/TimerView';
 import { TaskView, type Task } from './components/TaskView';
 import { StatsView } from './components/StatsView';
 import { PraiseModal } from './components/PraiseModal';
+import { WeeklyReportModal } from './components/WeeklyReportModal';
 import { Sparkles } from 'lucide-react';
+import { generatePraise } from './utils/praiseGenerator';
 
 interface AppStats {
   totalMinutes: number;
@@ -39,20 +41,27 @@ export default function App() {
   const [praiseModalOpen, setPraiseModalOpen] = useState<boolean>(false);
   const [lastPraiseMinutes, setLastPraiseMinutes] = useState<number>(0);
   const [quickTimerDuration, setQuickTimerDuration] = useState<number | null>(null);
+  const [dailyGoal, setDailyGoal] = useState<number | null>(null);
+  const [toastMsg, setToastMsg] = useState<{title: string; body: string} | null>(null);
+  const [weeklyReportOpen, setWeeklyReportOpen] = useState<boolean>(false);
 
   // ローカルストレージからのロード
   useEffect(() => {
     try {
       const storedUserData = localStorage.getItem('homesta_user_data');
+      let loadedUserName = '';
       if (storedUserData) {
         const parsed = JSON.parse(storedUserData);
-        setUserName(parsed.name || '');
+        loadedUserName = parsed.name || '';
+        setUserName(loadedUserName);
         setIsFirstLaunch(false);
       }
 
       const storedStats = localStorage.getItem('homesta_stats');
+      let loadedStats = stats;
       if (storedStats) {
-        setStats(JSON.parse(storedStats));
+        loadedStats = JSON.parse(storedStats);
+        setStats(loadedStats);
       }
 
       const storedTasks = localStorage.getItem('homesta_tasks');
@@ -64,6 +73,33 @@ export default function App() {
       if (storedHistory) {
         setStudyHistory(JSON.parse(storedHistory));
       }
+
+      // 初回起動トーストとdailyGoalの初期化
+      const lastLaunchDate = localStorage.getItem('homesta_last_launch');
+      const today = new Date().toISOString().split('T')[0];
+      if (loadedUserName && lastLaunchDate !== today) {
+        const msg = generatePraise({ userName: loadedUserName, isFirstLaunch: true });
+        setToastMsg(msg);
+        localStorage.setItem('homesta_last_launch', today);
+        setDailyGoal(null); // 日付が変わったらリセット
+        
+        // 4秒後にトーストを消す（CSSアニメーションと合わせる）
+        setTimeout(() => setToastMsg(null), 4400);
+      } else {
+        const storedGoal = localStorage.getItem('homesta_daily_goal');
+        if (storedGoal) setDailyGoal(Number(storedGoal));
+      }
+
+      // 週次レポートの判定
+      if (loadedUserName) {
+        const currentWeek = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
+        const lastReportWeek = Number(localStorage.getItem('homesta_last_report_week') || 0);
+        if (lastReportWeek < currentWeek && loadedStats.totalMinutes > 0) {
+          setWeeklyReportOpen(true);
+          localStorage.setItem('homesta_last_report_week', String(currentWeek));
+        }
+      }
+
     } catch (e) {
       console.error('Error loading data from localStorage', e);
     }
@@ -132,9 +168,15 @@ export default function App() {
   };
 
   // ホーム画面からのクイックタイマー起動
-  const handleStartQuickTimer = () => {
-    setQuickTimerDuration(3); // 3分タイマー
+  const handleStartQuickTimer = (minutes: number) => {
+    setQuickTimerDuration(minutes);
     setCurrentTab('timer');
+  };
+
+  // デイリーゴール設定
+  const handleSetDailyGoal = (minutes: number) => {
+    setDailyGoal(minutes);
+    localStorage.setItem('homesta_daily_goal', String(minutes));
   };
 
   // タスク管理の操作
@@ -254,6 +296,8 @@ export default function App() {
           <HomeView
             stats={stats}
             userName={userName}
+            dailyGoal={dailyGoal}
+            onSetDailyGoal={handleSetDailyGoal}
             onStartQuickTimer={handleStartQuickTimer}
             onNavigateToTasks={() => setCurrentTab('tasks')}
           />
@@ -294,6 +338,26 @@ export default function App() {
         onClose={() => setPraiseModalOpen(false)}
         minutes={lastPraiseMinutes}
       />
+
+      {/* 週次レポートモーダル */}
+      <WeeklyReportModal
+        isOpen={weeklyReportOpen}
+        onClose={() => setWeeklyReportOpen(false)}
+        stats={stats}
+      />
+
+      {/* トースト通知 */}
+      {toastMsg && (
+        <div className="toast-container">
+          <div className="toast">
+            <div className="toast-icon">✨</div>
+            <div className="toast-content">
+              <h4>{toastMsg.title}</h4>
+              <p>{toastMsg.body}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -17,6 +17,7 @@ export const TimerView: React.FC<TimerViewProps> = ({
   const [timeLeft, setTimeLeft] = useState<number>(3 * 60);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [preventMsg, setPreventMsg] = useState<string | null>(null);
+  const [showDistractionPrompt, setShowDistractionPrompt] = useState<boolean>(false);
   
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const initialTimeLeft = useRef<number>(3 * 60);
@@ -103,17 +104,32 @@ export const TimerView: React.FC<TimerViewProps> = ({
     return circumference - (timeLeft / total) * circumference;
   }, [timeLeft, selectedDuration]);
 
-  // スマホ離脱防止メッセージ
+  // スマホ離脱防止メッセージと誘惑パターンの選択
   const handlePreventDistraction = () => {
+    setShowDistractionPrompt(true);
+  };
+
+  const saveDistraction = (reason: string) => {
+    // 誘惑データの保存
+    try {
+      const stored = localStorage.getItem('homesta_distractions');
+      const distractions = stored ? JSON.parse(stored) : [];
+      distractions.push({ reason, date: new Date().toISOString() });
+      localStorage.setItem('homesta_distractions', JSON.stringify(distractions));
+    } catch (e) {
+      console.error('Failed to save distraction', e);
+    }
+
     const messages = [
-      `「スマホ触りたいな」って気付けたの、本当に天才！メタ認知能力が高すぎるよ！そのまま深呼吸しよ？🧘‍♀️`,
-      `SNSを見ようとした自分に気付いてストップできたね！その自制心、宇宙一だよ！かっこいい！💫`,
+      `「スマホ触りたいな」って気付けたの、本当に天才！そのまま深呼吸しよ？🧘‍♀️`,
+      `「${reason}」の誘惑に気付いてストップできたね！その自制心、宇宙一だよ！💫`,
       `私を見てくれてありがとう！スマホの向こう側より、目の前のあなたの未来のほうが100万倍輝いてるよ！✨`,
-      `偉い！誘惑に負けそうになっても、このボタンを押した時点で${userNameText}ちゃんの勝ちだよ！🏆`,
-      `スマホもちょっと休憩したがってるかも。あと数分、一緒にのんびりペンを動かしてみない？🐰`,
+      `偉い！誘惑に負けそうになっても踏みとどまった${userNameText}ちゃんの勝ちだよ！🏆`,
     ];
     const rand = messages[Math.floor(Math.random() * messages.length)];
     setPreventMsg(rand);
+    setShowDistractionPrompt(false);
+
     // 5秒後に消す
     setTimeout(() => {
       setPreventMsg(null);
@@ -285,19 +301,39 @@ export const TimerView: React.FC<TimerViewProps> = ({
           <p style={{ fontSize: '11px', marginBottom: '12px' }}>
             ついSNSや他のアプリを開きそうになったら、下のボタンを押してみて。
           </p>
-          <button
-            className="btn btn-outline"
-            onClick={handlePreventDistraction}
-            style={{
-              padding: '10px 16px',
-              borderRadius: '12px',
-              fontSize: '13px',
-              borderStyle: 'dashed'
-            }}
-          >
-            <Sparkles size={14} />
-            ついスマホを触りそう…
-          </button>
+          
+          {!showDistractionPrompt ? (
+            <button
+              className="btn btn-outline"
+              onClick={handlePreventDistraction}
+              style={{
+                padding: '10px 16px',
+                borderRadius: '12px',
+                fontSize: '13px',
+                borderStyle: 'dashed',
+                width: '100%'
+              }}
+            >
+              <Sparkles size={14} />
+              ついスマホを触りそう…
+            </button>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', animation: 'popIn 0.3s' }}>
+              <p style={{ fontSize: '12px', color: 'var(--color-primary-light)', fontWeight: 'bold' }}>何が気になった？</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+                {['SNS', '動画', 'ゲーム', 'その他'].map(reason => (
+                  <button
+                    key={reason}
+                    className="btn btn-secondary"
+                    onClick={() => saveDistraction(reason)}
+                    style={{ padding: '8px 12px', fontSize: '12px', flex: '1 1 calc(50% - 4px)' }}
+                  >
+                    {reason}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

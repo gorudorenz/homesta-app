@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Award, Zap, BookOpen, ChevronRight } from 'lucide-react';
+import { Award, Zap, BookOpen, ChevronRight, Target } from 'lucide-react';
 
 interface HomeViewProps {
   stats: {
@@ -10,13 +10,17 @@ interface HomeViewProps {
     lastStudyDate: string | null;
   };
   userName: string;
-  onStartQuickTimer: () => void;
+  dailyGoal: number | null;
+  onSetDailyGoal: (minutes: number) => void;
+  onStartQuickTimer: (minutes: number) => void;
   onNavigateToTasks: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
   stats,
   userName,
+  dailyGoal,
+  onSetDailyGoal,
   onStartQuickTimer,
   onNavigateToTasks,
 }) => {
@@ -30,7 +34,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
       `疲れたときは無理しなくていいんだよ。今日も深呼吸して、できることを少しだけやってみよう！`,
     ];
 
-    // 間が空いた後の復活
     if (stats.lastStudyDate) {
       const lastDate = new Date(stats.lastStudyDate);
       const today = new Date();
@@ -42,14 +45,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
       }
     }
 
-    // 累積時間に応じたメッセージ
     if (stats.totalMinutes >= 60) {
       return `なんと累計学習時間が${Math.floor(stats.totalMinutes / 60)}時間を超えてるよ！これまでの${userName}ちゃんの頑張り、全部見てるからね！誇っていいよ！🎖️`;
     }
 
-    // ランダムメッセージ
-    const randomIndex = Math.floor(Math.random() * messages.length);
-    return messages[randomIndex];
+    return messages[Math.floor(Math.random() * messages.length)];
   }, [stats, userName]);
 
   return (
@@ -65,26 +65,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="mascot-avatar">
           {/* かわいいウサギのSVGマスコット */}
           <svg viewBox="0 0 100 100" className="mascot-svg">
-            {/* 耳 */}
             <ellipse cx="38" cy="25" rx="10" ry="22" fill="#fff" transform="rotate(-10 38 25)" />
             <ellipse cx="38" cy="27" rx="6" ry="16" fill="#fda4af" transform="rotate(-10 38 27)" />
             <ellipse cx="62" cy="25" rx="10" ry="22" fill="#fff" transform="rotate(10 62 25)" />
             <ellipse cx="62" cy="27" rx="6" ry="16" fill="#fda4af" transform="rotate(10 62 27)" />
-            {/* 顔 */}
             <circle cx="50" cy="58" r="26" fill="#fff" />
-            {/* ほっぺ */}
             <circle cx="34" cy="62" r="5" fill="#fecdd3" />
             <circle cx="66" cy="62" r="5" fill="#fecdd3" />
-            {/* 目 */}
             <circle cx="42" cy="54" r="3.5" fill="#1e293b" />
             <circle cx="58" cy="54" r="3.5" fill="#1e293b" />
-            {/* 目のハイライト */}
             <circle cx="43" cy="52" r="1.2" fill="#fff" />
             <circle cx="59" cy="52" r="1.2" fill="#fff" />
-            {/* 鼻・口 */}
             <polygon points="50,60 48,58 52,58" fill="#f43f5e" />
             <path d="M48,62 Q50,64 52,62" fill="none" stroke="#f43f5e" strokeWidth="1.5" strokeLinecap="round" />
-            {/* 王冠（がんばり屋のしるし） */}
             <path d="M43,30 L45,35 L50,32 L55,35 L57,30 Z" fill="#fbbf24" stroke="#d97706" strokeWidth="1" />
             <circle cx="43" cy="29" r="1" fill="#d97706" />
             <circle cx="50" cy="31" r="1" fill="#d97706" />
@@ -92,6 +85,61 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </svg>
         </div>
       </div>
+
+      {/* 今日のハードル設定 or タイマー開始 */}
+      {dailyGoal === null ? (
+        <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(167, 139, 250, 0.1)' }}>
+          <h2 style={{ color: 'var(--color-primary-light)' }}>
+            <Target size={20} />
+            今日のハードルを決めよう！
+          </h2>
+          <p style={{ fontSize: '13px' }}>
+            調子はどう？今日はどのくらいできそうか、自分で選んでみてね。低く設定するのがコツだよ！
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <button className="btn btn-secondary" onClick={() => onSetDailyGoal(1)}>
+              😌 とにかく1分だけやる！
+            </button>
+            <button className="btn btn-secondary" onClick={() => onSetDailyGoal(5)}>
+              🙂 5分ならできそう！
+            </button>
+            <button className="btn btn-secondary" onClick={() => onSetDailyGoal(30)}>
+              🔥 今日はガッツリ30分！
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <h2>
+            <Zap style={{ color: 'var(--color-warning)' }} />
+            今日の目標：{dailyGoal}分
+          </h2>
+          <p style={{ marginBottom: '4px' }}>
+            「やる気が出ない」のは普通！まずはタイマーを押して、{dailyGoal}分だけ本を眺めてみよう。それだけで本当にすごいことだよ。
+          </p>
+          
+          <button 
+            className="btn btn-primary" 
+            onClick={() => onStartQuickTimer(dailyGoal)} 
+            style={{ textShadow: '0 1px 2px rgba(0,0,0,0.2)', padding: '16px', fontSize: '16px' }}
+          >
+            <BookOpen size={20} />
+            今すぐ {dailyGoal}分だけやる
+          </button>
+
+          <button 
+            className="btn btn-secondary" 
+            onClick={onNavigateToTasks}
+            style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 18px', marginTop: '8px' }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-primary)' }}></span>
+              今日の極小タスク（ハードル低め）
+            </span>
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
 
       {/* 累積の成果表示 - やり直し感のない肯定UI */}
       <div className="glass-card stat-summary-card">
@@ -120,7 +168,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         </div>
 
-        {/* 継続プログレスバー：途切れても累積は下がらないことを示すメッセージ */}
+        {/* 継続プログレスバー */}
         <div style={{ marginTop: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '12px' }}>
             <span>累積セッション</span>
@@ -133,34 +181,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
             20回達成で「不屈のチャレンジャー」バッジ獲得！
           </p>
         </div>
-      </div>
-
-      {/* 今日のクイックアクション */}
-      <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h2>
-          <Zap style={{ color: 'var(--color-warning)' }} />
-          まずは小さな一歩から
-        </h2>
-        <p style={{ marginBottom: '4px' }}>
-          「やる気が出ない」のは普通！まずは3分タイマーを押して、本を眺めてみよう。それだけで本当にすごいことだよ。
-        </p>
-        
-        <button className="btn btn-primary" onClick={onStartQuickTimer} style={{ textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
-          <BookOpen size={18} />
-          3分だけ勉強をはじめる
-        </button>
-
-        <button 
-          className="btn btn-secondary" 
-          onClick={onNavigateToTasks}
-          style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 18px' }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-primary)' }}></span>
-            今日の極小タスク（ハードル低め）
-          </span>
-          <ChevronRight size={16} />
-        </button>
       </div>
 
     </div>
