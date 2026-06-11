@@ -73,8 +73,8 @@ export const StatsView: React.FC<StatsViewProps> = ({
       { id: 'first_step', title: '最初の一歩', desc: '1回でも学習を開始できた！', unlocked: stats.sessionsCount >= 1, color: '#a78bfa' },
       { id: 'revival_hero', title: '復活の勇者', desc: '途切れても諦めずに再開した！', unlocked: stats.revivalCount >= 1, color: '#06b6d4' },
       { id: 'tiny_accumulate', title: 'ちりつもマスター', desc: '累計30分以上学習を積み重ねた！', unlocked: stats.totalMinutes >= 30, color: '#fbbf24' },
-      { id: 'big_hero', title: '大英傑の領域', desc: '累計120分以上学習した！', unlocked: stats.totalMinutes >= 120, color: '#ec4899' },
-      { id: 'task_hunter', title: '極小タスクマスター', desc: '極小タスクを3回以上達成！', unlocked: completedTasksCount >= 3, color: '#10b981' },
+      { id: 'big_hero', title: '海外店長への道', desc: '累計120分以上！現場で確かな手応え！', unlocked: stats.totalMinutes >= 120, color: '#ec4899' },
+      { id: 'task_hunter', title: '現場の即戦力', desc: '英語タスクを3回以上達成！', unlocked: completedTasksCount >= 3, color: '#10b981' },
     ];
   }, [stats, completedTasksCount]);
 
@@ -139,10 +139,11 @@ export const StatsView: React.FC<StatsViewProps> = ({
 
       {/* 累積成果カード */}
       <div className="glass-card">
-        <h2 style={{ marginBottom: '16px' }}><BarChart3 style={{ color: 'var(--color-secondary)' }} />成長の可視化</h2>
+        <h2 style={{ marginBottom: '16px' }}><BarChart3 style={{ color: 'var(--color-secondary)' }} />海外店舗への確かな足跡</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <span style={{ color: 'var(--text-muted)' }}>累計学習時間</span><span style={{ fontWeight: 'bold' }}>{stats.totalMinutes} 分</span>
+            <span style={{ color: 'var(--text-muted)' }}>累計学習時間<br/><span style={{fontSize:'10px', color:'var(--color-primary-light)'}}>接客換算: 約{Math.floor(stats.totalMinutes / 3)}人対応レベル！</span></span>
+            <span style={{ fontWeight: 'bold' }}>{stats.totalMinutes} 分</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
             <span style={{ color: 'var(--text-muted)' }}>学習セッション回数</span><span style={{ fontWeight: 'bold' }}>{stats.sessionsCount} 回</span>

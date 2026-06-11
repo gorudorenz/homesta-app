@@ -44,6 +44,10 @@ export default function App() {
   const [dailyGoal, setDailyGoal] = useState<number | null>(null);
   const [toastMsg, setToastMsg] = useState<{title: string; body: string} | null>(null);
   const [weeklyReportOpen, setWeeklyReportOpen] = useState<boolean>(false);
+  
+  // ライフセーバー（空白救済）機能
+  const [showLifesaverPrompt, setShowLifesaverPrompt] = useState<boolean>(false);
+  const [missedDateStr, setMissedDateStr] = useState<string | null>(null);
 
   // ローカルストレージからのロード
   useEffect(() => {
@@ -82,6 +86,22 @@ export default function App() {
         setToastMsg(msg);
         localStorage.setItem('homesta_last_launch', today);
         setDailyGoal(null); // 日付が変わったらリセット
+
+        // 前回の起動から1日以上（昨日ログインしていない）空いているかチェック
+        if (lastLaunchDate) {
+          const lastDate = new Date(lastLaunchDate);
+          const currentDate = new Date(today);
+          const diffTime = Math.abs(currentDate.getTime() - lastDate.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          
+          if (diffDays >= 2) {
+            // 昨日を算出
+            const yesterday = new Date(currentDate);
+            yesterday.setDate(yesterday.getDate() - 1);
+            setMissedDateStr(yesterday.toISOString().split('T')[0]);
+            setShowLifesaverPrompt(true);
+          }
+        }
         
         // 4秒後にトーストを消す（CSSアニメーションと合わせる）
         setTimeout(() => setToastMsg(null), 4400);
@@ -119,6 +139,24 @@ export default function App() {
   const saveHistory = (newHistory: { [date: string]: number }) => {
     setStudyHistory(newHistory);
     localStorage.setItem('homesta_history', JSON.stringify(newHistory));
+  };
+
+  // ライフセーバー（休養日の自動記録）を実行
+  const handleAcceptLifesaver = () => {
+    if (missedDateStr) {
+      // studyHistoryに充電日(0分)として記録
+      const newHistory = { ...studyHistory, [missedDateStr]: 0 };
+      saveHistory(newHistory);
+      
+      // 日記にも自動記録
+      try {
+        const storedDiaries = localStorage.getItem('homesta_diaries');
+        const diaries = storedDiaries ? JSON.parse(storedDiaries) : {};
+        diaries[missedDateStr] = "シフトの疲れで戦略的休息を取った！";
+        localStorage.setItem('homesta_diaries', JSON.stringify(diaries));
+      } catch (e) {}
+    }
+    setShowLifesaverPrompt(false);
   };
 
   // ニックネームの登録
@@ -354,6 +392,32 @@ export default function App() {
             <div className="toast-content">
               <h4>{toastMsg.title}</h4>
               <p>{toastMsg.body}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 空白救済（ライフセーバー）ポップアップ */}
+      {showLifesaverPrompt && missedDateStr && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(10, 8, 20, 0.9)', backdropFilter: 'blur(12px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 3000, padding: '20px', animation: 'fadeIn 0.3s'
+        }}>
+          <div className="glass-card" style={{ maxWidth: '400px', width: '100%', textAlign: 'center', border: '2px solid var(--color-primary-light)' }}>
+            <h2 style={{ fontSize: '18px', color: '#fff', marginBottom: '12px' }}>昨日はお疲れ様！🐰🍵</h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-main)', marginBottom: '20px', lineHeight: '1.6' }}>
+              アプリを開けなかったみたいだけど、遅くまでのシフトで疲れてたよね。無理しないのが一番！<br/>
+              カレンダーの空白を防ぐために、昨日を**「戦略的休息日」**として記録しておこうか？
+            </p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn btn-primary" onClick={handleAcceptLifesaver} style={{ flex: 2 }}>
+                休息日として埋める！🔋
+              </button>
+              <button className="btn btn-secondary" onClick={() => setShowLifesaverPrompt(false)} style={{ flex: 1 }}>
+                大丈夫
+              </button>
             </div>
           </div>
         </div>

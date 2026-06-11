@@ -94,17 +94,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
             今日のハードルを決めよう！
           </h2>
           <p style={{ fontSize: '13px' }}>
-            調子はどう？今日はどのくらいできそうか、自分で選んでみてね。低く設定するのがコツだよ！
+            今日の調子はどう？「たった1分」でも、現場で使える英語に触れられれば大成功！無理せず選んでね。
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <button className="btn btn-secondary" onClick={() => onSetDailyGoal(1)}>
-              😌 とにかく1分だけやる！
+              😌 1分だけ！単語を眺める
             </button>
             <button className="btn btn-secondary" onClick={() => onSetDailyGoal(5)}>
-              🙂 5分ならできそう！
+              🙂 5分で現場で使えるフレーズを！
             </button>
             <button className="btn btn-secondary" onClick={() => onSetDailyGoal(30)}>
-              🔥 今日はガッツリ30分！
+              🔥 今日はガッツリ30分！海外へ一歩前進
             </button>
           </div>
         </div>
@@ -115,7 +115,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             今日の目標：{dailyGoal}分
           </h2>
           <p style={{ marginBottom: '4px' }}>
-            「やる気が出ない」のは普通！まずはタイマーを押して、{dailyGoal}分だけ本を眺めてみよう。それだけで本当にすごいことだよ。
+            シフト後で疲れてるよね。「やる気が出ない」のは普通！でも{dailyGoal}分だけ英語に触れれば、明日の現場できっと役に立つよ！
           </p>
           
           <button 
@@ -134,7 +134,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-primary)' }}></span>
-              今日の極小タスク（ハードル低め）
+              今日の英語極小タスク（ハードル低め）
             </span>
             <ChevronRight size={16} />
           </button>

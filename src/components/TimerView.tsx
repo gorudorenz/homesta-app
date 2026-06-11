@@ -121,9 +121,9 @@ export const TimerView: React.FC<TimerViewProps> = ({
     }
 
     const messages = [
-      `「スマホ触りたいな」って気付けたの、本当に天才！そのまま深呼吸しよ？🧘‍♀️`,
-      `「${reason}」の誘惑に気付いてストップできたね！その自制心、宇宙一だよ！💫`,
-      `私を見てくれてありがとう！スマホの向こう側より、目の前のあなたの未来のほうが100万倍輝いてるよ！✨`,
+      `「スマホ触りたいな」って気付いて止まれたの、本当に天才！その自制心は絶対仕事でも活きるよ！🧘‍♀️`,
+      `「${reason}」の誘惑を断ち切った！その積み重ねが、海外への一番の近道だよ！💫`,
+      `スマホより英語を選んだ！その小さな選択で、現場で笑顔にできるお客さんが確実に増えるよ！✨`,
       `偉い！誘惑に負けそうになっても踏みとどまった${userNameText}ちゃんの勝ちだよ！🏆`,
     ];
     const rand = messages[Math.floor(Math.random() * messages.length)];
@@ -234,7 +234,7 @@ export const TimerView: React.FC<TimerViewProps> = ({
             {formatTime(timeLeft)}
           </span>
           <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            {isRunning ? 'ただいま前進中！🚀' : 'いつでもスタートしてね'}
+            {isRunning ? '海外への一歩を踏み出し中！🚀' : '1分だけでも英語に触れれば大成功！'}
           </span>
         </div>
       </div>

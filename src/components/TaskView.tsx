@@ -26,11 +26,11 @@ export const TaskView: React.FC<TaskViewProps> = ({
 
   // プリセットタスク（ハードル極低）
   const presets = [
-    { text: '机に向かって座る', hint: '座っただけで偉い！' },
-    { text: '教科書や参考書を机に置く', hint: 'やる気準備完了！' },
-    { text: '本やサイトを1ページ開く', hint: '実質もう勉強開始！' },
-    { text: 'ノートに日付を書く', hint: '行動を起こせた証拠！' },
-    { text: 'ペンを手に持つ', hint: 'ペンを握るだけで100点！' },
+    { text: '単語アプリを1問だけ解く', hint: '1問やれば十分！' },
+    { text: '英語の接客動画を1分見る', hint: '見るだけで耳が慣れる！' },
+    { text: 'テキストをパッと開く', hint: '開いた時点でもう偉い！' },
+    { text: '英語の音声を流すだけ', hint: 'BGMにするだけでOK！' },
+    { text: '今日使った接客フレーズを思い出す', hint: '現場の復習で確実な一歩！' },
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -102,7 +102,7 @@ export const TaskView: React.FC<TaskViewProps> = ({
         <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px' }}>
           <input
             type="text"
-            placeholder="例: 教科書をパッと開く"
+            placeholder="例: 単語を1個だけ見る"
             value={newtaskText}
             onChange={(e) => setNewtaskText(e.target.value)}
             style={{
